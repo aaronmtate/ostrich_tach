@@ -1,3 +1,14 @@
+// diyAudio Arduino LCD Tachometer with Serial Output ("Ostrich")
+//
+// A turntable tachometer sketch, including integration with Phoenix Engineering's
+// Falcon or Eagle power supplies. External communication is through the default
+// serial port connection (D0, D1, though only D1 (TX) is actually used). PSU
+// integration requires a RS232 shield or custom converter. Connection to PSU is
+// with a 3.5mm (headphone jack) TRS connector, with TX port from DB9 connector
+// attached to the Ring connector (red wire) on the TRS jack. Thanks to Pyramid
+// (Phoenix Eng) for assist and communication specs.
+// Base tachometer functionality based on design from diyAudio user tauro0221.
+
 #include <LiquidCrystal.h>
 
 #define SENSOR_PIN 3 // Interrupt input pin for sensor on Arduino UNO MUST be pin 3.
