@@ -17,9 +17,7 @@
 LiquidCrystal lcd(12, 11, 6, 5, 4, 2);
 
 // Global Variables
-volatile unsigned long last_pulse_time = 1; // Timestamp of latest interrupt pulse from sensor.
-volatile bool stale_display = false;
-
+volatile unsigned long last_pulse_time = 0; // Timestamp of latest interrupt pulse from sensor.
 unsigned long prev_pulse_time = 0; // Timestamp of previous interrupt pulse from sensor.
 byte cycle_count = 2;
 
@@ -37,36 +35,34 @@ void setup() {
 }
 
 void loop() {
-  // Show waiting message after 5 seconds of no new pulses, but only if pulses were detected.
-  if (stale_display) {
+  if (last_pulse_time > prev_pulse_time) {
     calculate_rpm();
+    prev_pulse_time = last_pulse_time;
   }
+  // Show waiting message after 5 seconds of no new pulses, but only if pulses were detected.
   else if (micros() - last_pulse_time > 5000000 && cycle_count > 0) {
     lcd.setCursor(0, 1);  // Set cursor at first character, second line.
     lcd.print(" Awaiting Signal");
     cycle_count = 0;
   }
-  // delay(100);
+  delay(100);
 }
 
 // Sensor pulse completion interrupt callback handler. Keep this as lightweight as possible.
 void sensor_pulse() {
   last_pulse_time = micros();
-  stale_display = true;
 }
 
 void calculate_rpm() {
-  stale_display = false;
-
   if (cycle_count < 2) {
     // Build up a couple of cycles to limit poor reporting.
     cycle_count++;
     lcd.setCursor(0, 1);
     lcd.print("  RPM:          "); // Clear the Awaiting Signal message, prep for RPM update
-  } else {
-    // Avoid DIV0, just in case.
-    float rpm = (last_pulse_time > prev_pulse_time) ? 60000000.0/(last_pulse_time - prev_pulse_time) : 0;
-    lcd.setCursor(7, 1);
+  }
+  else {
+    float rpm = 60000000.0/(last_pulse_time - prev_pulse_time);
+    lcd.setCursor(7, 1); // Update second line, after "  RPM: ".
     lcd.print(rpm, 4);
 
     // Send update to Phoenix PSU via serial port (D0 and D1) in format XX.XXX[lf][cr]
@@ -79,5 +75,4 @@ void calculate_rpm() {
       Serial.print(outstr);
     }
   }
-  prev_pulse_time = last_pulse_time;
 }
