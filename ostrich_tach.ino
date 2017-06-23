@@ -50,11 +50,12 @@ void calculate_rpm() {
     lcd.print(rpm, 4);
     lcd.print("  ");
 
-    // Send update to Phoenix PSU via serial port (D0 and D1) in format XX.XXX[cr][lf]
+    // Send update to Phoenix PSU via serial port (D0 and D1) in format XX.XXX[lf][cr]
     if ((10.0 <= rpm) && (rpm < 100)) {
       char outstr[6];
       dtostrf(rpm, 6, 3, outstr);
-      Serial.println(outstr);
+      Serial.print(outstr);
+      Serial.print("\n\r");
     }
   }
 }
